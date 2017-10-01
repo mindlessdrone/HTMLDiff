@@ -1,7 +1,11 @@
 import re
 
 def build_tokens(data):
-    regex = r"(?P<sp>\s+)|(?P<tag>\<\w+\>)|(?P<etag>\<\/\w+\>)|(?P<str>[\w\s]+)"
+
+    TAG  = r'(?P<tag>\<\w+\>)'
+    ETAG = r'(?P<etag>\<\/\w+\>)'
+    STR  = r'(?P<str>.+?(?=\<))'
+    regex = '|'.join((TAG, ETAG, STR))
 
     for i, line in enumerate(data.split('\n')):
         for match in re.finditer(regex, line):
