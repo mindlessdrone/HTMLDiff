@@ -5,16 +5,29 @@ Node = namedtuple('Node', ['value', 'children'])
 
 def build_tokens(data):
 
-    TAG  = r'(?P<tag>\<\w+\>)'
-    ETAG = r'(?P<etag>\<\/\w+\>)'
-    STR  = r'(?P<str>.+?(?=\<))'
-    regex = '|'.join((TAG, ETAG, STR))
+    SP       = r'(?P<sp>\s+)'
+    TAG      = r'(?P<tag>\<\w+\>)'
+    ETAG     = r'(?P<etag>\<\/\w+\>)'
+    STR      = r'(?P<str>(.+?(?=\<)|(.+$)))'
+    regex = '|'.join((SP, TAG, ETAG, STR))
 
+    text_buffer = []
+    text_line = 0
     for i, line in enumerate(data.split('\n')):
         for match in re.finditer(regex, line):
             groups = match.groupdict()
+            print(groups)
             for k, v in groups.items():
-                if v: yield (i + 1,k,v.strip(),)
+                if k == 'str' and v is not None:
+                    if not text_line: text_line = i + 1
+                    text_buffer.append(v)
+                    print(text_buffer)
+                elif v and k != 'sp':
+                    if text_buffer:
+                        yield (text_line, 'str', ''.join(text_buffer))
+                        text_buffer = []
+                        text_line = 0
+                    yield (i + 1,k,v.strip(),)
 
 def build_tree(tokens):
     root = Node(None, [])     
@@ -30,4 +43,5 @@ def build_tree(tokens):
     root.children.append(Node((0, 'eof', 'End of File'), []))
     return root
 
-
+def compare_trees(t1, t2):
+    pass
